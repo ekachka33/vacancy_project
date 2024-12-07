@@ -13,8 +13,12 @@ def print_vacancy(vacancy: Dict[str, Any]) -> None:
     print("\n" + "=" * 50)
     print(f"Название: {vacancy['name']}")
     print(f"URL: {vacancy['url']}")
-    print(f"Зарплата: {vacancy['salary'] if vacancy['salary'] else 'Не указана'}")
-    print(f"Описание: {vacancy['requirement']}")
+    salary = vacancy['salary']
+    if isinstance(salary, (int, float)) and salary > 0:
+        print(f"Зарплата: {salary:,} руб.")
+    else:
+        print("Зарплата: Не указана")
+    print(f"Описание: {vacancy.get('requirement', vacancy.get('description', 'Не указано'))}")
     print("=" * 50)
 
 
@@ -98,7 +102,15 @@ def main():
                         raise ValueError("Количество страниц должно быть положительным числом")
 
                     vacancies = user_ask.fetch_vacancies_from_hh(keyword, pages)
-                    print(f"Загружено {len(vacancies)} вакансий.")
+                    if vacancies:
+                        print(f"\nЗагружено {len(vacancies)} вакансий!")
+                        print("Хотите просмотреть загруженные вакансии? (да/нет)")
+                        if input().lower().startswith('д'):
+                            for vac in vacancies:
+                                print_vacancy(vac)
+                                input("Нажмите Enter для следующей вакансии...")  # Пауза между вакансиями
+                    else:
+                        print("Не удалось загрузить вакансии.")
                 except ValueError as e:
                     print(f"Ошибка: {e}")
                 except Exception as e:
@@ -117,4 +129,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
