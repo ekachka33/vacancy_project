@@ -28,7 +28,14 @@ class HH(Parser):
         Args:
             vacancy (Dict[str, Any]): Данные вакансии
         """
-        self.file_worker.add_vacancy(vacancy)
+        processed_vacancy = {
+            "id": vacancy.get("id", ""),
+            "name": vacancy.get("name", ""),
+            "url": vacancy.get("alternate_url", ""),
+            "salary": self._parse_salary(vacancy.get("salary", {})),
+            "description": vacancy.get("snippet", {}).get("requirement", "")
+        }
+        self.file_worker.add_vacancy(processed_vacancy)
 
     def get_vac(self, criteria: Any) -> List[Dict[str, Any]]:
         """
@@ -94,6 +101,25 @@ class HH(Parser):
 
         return loaded_vacancies
 
+    def get_vacancies_by_keyword(self, keyword: str) -> List[Dict[str, Any]]:
+        """
+        Получает вакансии по ключевому слову через API HeadHunter.
+
+        Args:
+            keyword (str): Ключевое слово для поиска
+
+        Returns:
+            List[Dict[str, Any]]: Список найденных вакансий
+        """
+        self.params['text'] = keyword
+        try:
+            response = requests.get(self.url, headers=self.headers, params=self.params)
+            response.raise_for_status()
+            return response.json()['items']
+        except requests.RequestException as e:
+            print(f"Error fetching vacancies: {e}")
+            return []
+
     def _parse_salary(self, salary_data: Dict[str, Any]) -> int:
         """
         Парсит данные о зарплате из ответа API.
@@ -102,15 +128,14 @@ class HH(Parser):
             salary_data (Dict[str, Any]): Данные о зарплате
 
         Returns:
-            int: Значение зарплаты или 0, если зарплата не указана
+            int: Значение зарплаты
         """
         if not salary_data:
             return 0
-
-        # Берем минимальную зарплату, если указана
-        salary = salary_data.get('from', 0)
-        if not salary:
-            # Если минимум не указан, берем максимум
-            salary = salary_data.get('to', 0)
-
-        return salary or 0  # Возвращаем 0, если зарплата None
+        
+        salary_from = salary_data.get("from", 0)
+        salary_to = salary_data.get("to", 0)
+        
+        if salary_to:
+            return salary_to
+        return salary_from or 0

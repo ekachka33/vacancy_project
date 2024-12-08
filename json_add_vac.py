@@ -17,7 +17,7 @@ class JSONVacancy:
             "name": vacancy["name"],
             "url": vacancy["url"],
             "salary": vacancy["salary"],
-            "requirement": vacancy["description"],
+            "description": vacancy["description"],
         }
         data.append(vacancy_dict)
 

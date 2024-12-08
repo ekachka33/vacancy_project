@@ -70,3 +70,21 @@ class Sort_Vacan:
             description=data.get("description", ""),
             id=data.get("id")
         )
+
+    def __lt__(self, other) -> bool:
+        """Сравнение меньше"""
+        if not isinstance(other, Sort_Vacan):
+            return NotImplemented
+        return self.salary < other.salary
+
+    def __gt__(self, other) -> bool:
+        """Сравнение больше"""
+        if not isinstance(other, Sort_Vacan):
+            return NotImplemented
+        return self.salary > other.salary
+
+    def __eq__(self, other) -> bool:
+        """Сравнение равно"""
+        if not isinstance(other, Sort_Vacan):
+            return NotImplemented
+        return self.salary == other.salary and self.name == other.name
